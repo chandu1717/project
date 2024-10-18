@@ -7,13 +7,14 @@
   - name: Installing Nginx
     ansible.builtin.yum:
       name: nginx
-      state: installed   
+      state: installed 
+      enabled: yes  
   
   - name: Enabling and Starting Nginx
     ansible.buitlin.service:
       name: nginx
       state: started
-      enabled: yes
+      
 
   - name: Removing html Directory
     ansible.builtin.file:
