@@ -75,7 +75,7 @@
       state: installed
   
   - name: loading schema
-    ansible.builtin.command: mongo --host mongodb.devrob.online </app/schema/catalogue.js
+    ansible.builtin.command: mongo --host mongodb.devrob.online /app/schema/catalogue.js
 
   - name: Restart catalogue
     ansible.builtin.service:
