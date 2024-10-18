@@ -8,12 +8,12 @@
     ansible.builtin.yum:
       name: nginx
       state: present
-      enabled: yes
         
   - name: Enabling and Starting Nginx
     ansible.builtin.service:
       name: nginx
       state: started
+      enabled: yes
       
   - name: Removing html Directory
     ansible.builtin.file:
