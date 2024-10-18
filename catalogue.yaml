@@ -4,9 +4,12 @@
   become: yes
 
   tasks:
-  - name: Setup npm source
-    ansible.builtin.shell: curl -sL https://rpm.nodesource.com/setup_lts.x | bash
-  
+  - name: Disable Node.js module
+    ansible.builtin.command: yum module disable nodejs -y
+
+  - name: Enable Node.js 20 module
+    ansible.builtin.command: yum module enable nodejs:20 -y
+
   - name: Install Node.js
     ansible.builtin.yum:
       name: nodejs
@@ -82,3 +85,4 @@
     ansible.builtin.service:
       name: catalogue
       state: restarted
+
