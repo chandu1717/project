@@ -72,11 +72,11 @@
   
   - name: Install MongoDB
     ansible.builtin.yum:
-      name: mongodb-org-shell
+      name: mongodb-mongosh
       state: installed
   
   - name: Load schema
-    ansible.builtin.command: mongosh --host mongodb.devrob.online /app/schema/catalogue.js
+    ansible.builtin.command: mongosh --host mongodb.devrob.online < /app/schema/catalogue.js
 
   - name: Restart catalogue service
     ansible.builtin.service:
