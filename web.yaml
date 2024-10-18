@@ -1,0 +1,47 @@
+---
+- name: Installing web components
+  hosts: web
+  become: yes
+
+  tasks:
+  - name: Installing Nginx
+    ansible.builtin.yum:
+      name: nginx
+      state: installed   
+  
+  - name: Enabling and Starting Nginx
+    ansible.buitlin.service:
+      name: nginx
+      state: started
+
+  - name: Removing html Directory
+    ansible.builtin.file:
+      path: /usr/nginx/share/html
+      state: absent
+
+  - name: creating new directory
+    ansible.builtin.file:
+      path: /usr/nginx/share/html
+      state: diirectory
+
+  - name: Downloading Artifacts
+    ansible.builtin.get_url: 
+      url: curl -o /tmp/web.zip https://roboshop-builds.s3.amazonaws.com/web.zip
+      dest: /tmp/
+
+  - name: Unzipping files
+    ansible.builtin.unarchive:
+      src: /tmp/web.zip
+      dest: /usr/share/nginx/html
+      remote_src: yes
+
+  - name: create reverse proxy configurating and pasting the content
+    ansible.builtin.copy:
+      src: roboshop.conf
+      dest: /etc/nginx/default.d/roboshop.conf
+
+  - name: Restart nginx
+    ansible.built.service:
+      name: nginx
+      state: restarted
+      enabled: yes

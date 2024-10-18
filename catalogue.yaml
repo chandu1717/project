@@ -1,0 +1,85 @@
+---
+- name: Installing catalogue components
+  hosts: catalogue
+  become: yes
+
+  tasks:
+  - name: setup npm source
+    ansible.builtin.shell: curl -sL https://rpm.nodesource.com/setup_lts.x | bash
+  
+  - name: Install NodeJs
+    ansibile.builtin.yum:
+      name: nodejs
+      state: installed
+  
+  - name: Check user exists or not
+    ansible.builtin.command: id roboshop
+    register: out
+    ignore_errors: true
+  
+  - when: out.ec != 0
+    name: Creating user roboshop
+    become: yes
+    ansible.builtin.user:
+      name: roboshop
+  
+  - name: check app directory exists or not
+    ansible.builtin.stat:
+      path: /app
+    register: directory
+
+  - name: print directory stat
+    ansible.builtin.debug:
+      msg: "output: {{directory}}"
+  - when: directory.stat.exists == False
+    name: create /app directory
+    ansible.builtin.file:
+      path: /app
+      state: directory
+
+  - name: Downloading catalogue Artifacts
+    ansible.builtin.get_url:
+      url: curl -o /tmp/catalogue.zip https://roboshop-builds.s3.amazonaws.com/catalogue.zip
+      dest: /tmp
+
+  - name: Unzipping files
+    ansible.builtin.unarchive:
+      src: /tmp/catalogue.zip
+      dest: /app
+      remote_src: yes
+
+  - name: Instailling requried node modules
+    ansible.builtin.command: npm install
+    args:
+      chdir: /app
+  
+  - name: copying catalogue service
+    ansible.builtin.copy:
+      src: catalogue.service
+      dest: /etc/systemd/system/catalogue.service
+
+  - name: Enabling system deamon
+    ansible.builtin.systemd:
+      deamon_reaload: true
+
+  - name: Copy  mongodb.repo
+    ansible.builtin.copy:
+      src: mongodb.repo
+      dest: /etc/yum.repo.d/mongo.repo
+  
+  - name: Installing mongodb
+    ansible.builtin.yum:
+      name: mongodb-org-shell
+      state: installed
+  
+  - name: loading schenma
+    ansible.builtin.command: mongo --host mongodb.devrob.online < /app/schema/catalogue.js
+
+  - name: Restart catalogue
+    ansible.builtin.service:
+      name: catalogue
+      state: restarted
+      ebabled: true  
+
+      
+    
