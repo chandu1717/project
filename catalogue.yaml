@@ -57,7 +57,6 @@
     ansible.builtin.copy:
       src: catalogue.service
       dest: /etc/systemd/system/catalogue.service
-      remote_src: yes
 
   - name: starting and Enabling  catalogue
     ansible.builtin.service:
@@ -68,7 +67,7 @@
   - name: Copy  mongodb.repo
     ansible.builtin.copy:
       src: mongodb.repo
-      dest: /etc/yum.repo.d/mongo.repo
+      dest: /etc/yum.repos.d/mongo.repo
   
   - name: Installing mongodb
     ansible.builtin.yum:
