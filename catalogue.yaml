@@ -74,16 +74,8 @@
       name: mongodb-org-shell
       state: installed
   
-  - name: Check if products collection exists
-    ansible.builtin.command: mongo --host mongodb.devrob.online --eval "db.getCollectionNames()"
-    register: collection_names
-
-  - name: Clear existing products if collection exists
-    ansible.builtin.command: mongo --host mongodb.devrob.online --eval "db.products.drop()"
-    when: "'products' in collection_names.stdout"
-
-  - name: Loading schema
-    ansible.builtin.command: mongo --host mongodb.devrob.online /app/schema/catalogue.js
+  - name: loading schema
+    ansible.builtin.command: mongo --host mongodb.devrob.online <  /app/schema/catalogue.js
 
   - name: Restart catalogue
     ansible.builtin.service:
