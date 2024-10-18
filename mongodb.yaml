@@ -26,4 +26,3 @@
     ansibile.builtin.service:
       name: mongod
       state: restarted
----
