@@ -75,7 +75,7 @@
 
   - name: Install MongoDB
     ansible.builtin.yum:
-      name: mongodb-mongosh  # Use this if mongosh isn't available
+      name: mongodb-org-shell  # Use this if mongosh isn't available
       state: installed
 
   - name: Load schema
