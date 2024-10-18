@@ -57,6 +57,7 @@
     ansible.builtin.copy:
       src: catalogue.service
       dest: /etc/systemd/system/catalogue.service
+      remote_src: yes
 
   - name: starting and Enabling  catalogue
     ansible.builtin.service:
