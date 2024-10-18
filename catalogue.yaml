@@ -9,7 +9,7 @@
 
   - name: Enable Node.js 20 module
     ansible.builtin.command: yum module enable nodejs:20 -y
-
+  
   - name: Install Node.js
     ansible.builtin.yum:
       name: nodejs
