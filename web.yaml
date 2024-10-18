@@ -5,20 +5,20 @@
 
   tasks:
   - name: Installing Nginx
-    ansible.builtin.dnf:
+    ansible.builtin.yum:
       name: nginx
-      state: installed 
-      enabled: yes  
+      state: installed  
   
   - name: Enabling and Starting Nginx
     ansible.builtin.service:
       name: nginx
       state: started
+      enabled: yes
       
 
   - name: Removing html Directory
     ansible.builtin.file:
-      path: /usr/nginx/share/html
+      path: /usr/share/nginx/html
       state: absent
 
   - name: creating new directory
