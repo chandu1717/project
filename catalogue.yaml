@@ -79,7 +79,14 @@
       state: installed
 
   - name: Load schema
-    ansible.builtin.command: mongosh --host mongodb.devrob.online </app/schema/catalogue.js
+    ansible.builtin.command: mongosh --host mongodb.devrob.online /app/schema/catalogue.js
+    register: schema_load
+    ignore_errors: true
+
+  - name: Handle MongoDB schema load errors
+    ansible.builtin.debug:
+      msg: "Schema load failed: {{ schema_load.stderr }}"
+    when: schema_load.rc != 0
 
   - name: Restart catalogue service
     ansible.builtin.service:
