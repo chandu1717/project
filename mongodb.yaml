@@ -11,7 +11,7 @@
 
   - name: Install mongodb
     ansible.builtin.yum:
-      name: mongodb-org-<desired_version>
+      name: mongodb-org
       state: installed
 
   - name: starting and Enabling  mongodb service
