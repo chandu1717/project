@@ -81,4 +81,4 @@
     ansible.builtin.service:
       name: catalogue
       state: restarted
-      ebabled: true  
+    
