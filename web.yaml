@@ -2,7 +2,7 @@
 - name: Installing web components
   hosts: web
   become: yes
-
+  
   tasks:
   - name: Installing Nginx
     ansible.builtin.yum:
