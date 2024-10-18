@@ -1,95 +1,85 @@
----
-- name: Installing catalogue components
+- name: Install catalogue component
   hosts: catalogue
   become: yes
-
   tasks:
-  - name: Disable Node.js module
-    ansible.builtin.command: yum module disable nodejs -y
+  - name: setup NPM source
+    ansible.builtin.shell: "curl -sL https://rpm.nodesource.com/setup_lts.x | bash"
 
-  - name: Enable Node.js 20 module
-    ansible.builtin.command: yum module enable nodejs:20 -y
-  
-  - name: Install Node.js
+  - name: Install NodeJS
     ansible.builtin.yum:
       name: nodejs
       state: installed
-  
-  - name: Check if user 'roboshop' exists
+
+  - name: check roboshop user exist or not
     ansible.builtin.command: id roboshop
-    register: out
+    register: out #output is variable name
     ignore_errors: true
 
-  - name: Create user 'roboshop'
-    become: yes
+  - when: out.rc != 0
+    name: create user roboshop
+    become: yes # we need sudo access for this task only
     ansible.builtin.user:
       name: roboshop
-    when: out.rc != 0
-  
-  - name: Check if /app directory exists
+
+  - name: check /app directory exists or not
     ansible.builtin.stat:
       path: /app
     register: directory
 
-  - name: Print directory stat
+  - name: print the directory stats
     ansible.builtin.debug:
-      msg: "output: {{ directory }}"
+      msg: "output: {{directory}}"
 
-  - name: Create /app directory
+  - when: directory.stat.exists == False
+    name: create /app directory
     ansible.builtin.file:
       path: /app
       state: directory
-    when: not directory.stat.exists
 
-  - name: Download catalogue artifacts
+  - name: download catalogue artifact
     ansible.builtin.get_url:
       url: https://roboshop-builds.s3.amazonaws.com/catalogue.zip
       dest: /tmp
 
-  - name: Unzip files
+  - name: extract catalogue artifact
     ansible.builtin.unarchive:
       src: /tmp/catalogue.zip
       dest: /app
       remote_src: yes
 
-  - name: Install required node modules
+  - name: install dependencies
     ansible.builtin.command: npm install
     args:
       chdir: /app
-  
-  - name: Copy catalogue service
+
+  - name: copy catalogue service
     ansible.builtin.copy:
       src: catalogue.service
       dest: /etc/systemd/system/catalogue.service
 
-  - name: Start and enable catalogue service
-    ansible.builtin.service:
-      name: catalogue
-      state: started
-      enabled: yes
+  - name: deamon reload
+    ansible.builtin.systemd:
+      daemon_reload: true
 
-  - name: Copy MongoDB repo
+  - name: copy mongo repo to yum.repos.d
     ansible.builtin.copy:
       src: mongodb.repo
       dest: /etc/yum.repos.d/mongo.repo
 
   - name: Install MongoDB
     ansible.builtin.yum:
-      name: mongodb-org-shell  # Use this if mongosh isn't available
+      name: mongodb-org-shell
       state: installed
 
-  - name: Load schema
-    ansible.builtin.command: mongosh --host mongodb.devrob.online /app/schema/catalogue.js
-    register: schema_load
-    ignore_errors: true
+  - name: load catalogue data
+    ansible.builtin.command: mongo --host mongodb.joindevops.online < /app/schema/catalogue.js
 
-  - name: Handle MongoDB schema load errors
-    ansible.builtin.debug:
-      msg: "Schema load failed: {{ schema_load.stderr }}"
-    when: schema_load.rc != 0
-
-  - name: Restart catalogue service
+  - name: restart catalogue
     ansible.builtin.service:
       name: catalogue
       state: restarted
+      enabled: true
 
+  
+
+  
