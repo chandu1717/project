@@ -60,7 +60,7 @@
 
   - name: Enabling system deamon
     ansible.builtin.systemd:
-      deamon_reaload: true
+      deamon_reload: true
 
   - name: Copy  mongodb.repo
     ansible.builtin.copy:
