@@ -69,12 +69,12 @@
     ansible.builtin.copy:
       src: mongodb.repo
       dest: /etc/yum.repos.d/mongo.repo
-  
+
   - name: Install MongoDB
     ansible.builtin.yum:
-      name: mongodb-mongosh
+      name: mongodb-org-shell  # Use this if mongosh isn't available
       state: installed
-  
+
   - name: Load schema
     ansible.builtin.command: mongosh --host mongodb.devrob.online < /app/schema/catalogue.js
 
