@@ -23,7 +23,7 @@
 
   - name: creating new directory
     ansible.builtin.file:
-      path: /usr/nginx/share/html
+      path: /usr/share/nginx/html
       state: diirectory
 
   - name: Downloading Artifacts
