@@ -4,81 +4,81 @@
   become: yes
 
   tasks:
-  - name: setup npm source
+  - name: Setup npm source
     ansible.builtin.shell: curl -sL https://rpm.nodesource.com/setup_lts.x | bash
   
-  - name: Install NodeJs
+  - name: Install Node.js
     ansible.builtin.yum:
       name: nodejs
       state: installed
   
-  - name: Check user exists or not
+  - name: Check if user 'roboshop' exists
     ansible.builtin.command: id roboshop
     register: out
     ignore_errors: true
-  
-  - when: out.rc != 0
-    name: Creating user roboshop
+
+  - name: Create user 'roboshop'
     become: yes
     ansible.builtin.user:
       name: roboshop
+    when: out.rc != 0
   
-  - name: check app directory exists or not
+  - name: Check if /app directory exists
     ansible.builtin.stat:
       path: /app
     register: directory
 
-  - name: print directory stat
+  - name: Print directory stat
     ansible.builtin.debug:
-      msg: "output: {{directory}}"
-  - when: directory.stat.exists == False
-    name: create /app directory
+      msg: "output: {{ directory }}"
+
+  - name: Create /app directory
     ansible.builtin.file:
       path: /app
       state: directory
+    when: not directory.stat.exists
 
-  - name: Downloading catalogue Artifacts
+  - name: Download catalogue artifacts
     ansible.builtin.get_url:
       url: https://roboshop-builds.s3.amazonaws.com/catalogue.zip
       dest: /tmp
 
-  - name: Unzipping files
+  - name: Unzip files
     ansible.builtin.unarchive:
       src: /tmp/catalogue.zip
       dest: /app
       remote_src: yes
 
-  - name: Instailling requried node modules
+  - name: Install required node modules
     ansible.builtin.command: npm install
     args:
       chdir: /app
   
-  - name: copying catalogue service
+  - name: Copy catalogue service
     ansible.builtin.copy:
       src: catalogue.service
       dest: /etc/systemd/system/catalogue.service
 
-  - name: starting and Enabling  catalogue
+  - name: Start and enable catalogue service
     ansible.builtin.service:
       name: catalogue
       state: started
       enabled: yes
 
-  - name: Copy  mongodb.repo
+  - name: Copy MongoDB repo
     ansible.builtin.copy:
       src: mongodb.repo
       dest: /etc/yum.repos.d/mongo.repo
   
-  - name: Installing mongodb
+  - name: Install MongoDB
     ansible.builtin.yum:
       name: mongodb-org-shell
       state: installed
   
-  - name: loading schema
-    ansible.builtin.command: mongo --host mongodb.devrob.online <"/app/schema/catalogue.js"
+  - name: Load schema
+    ansible.builtin.command: mongo --host mongodb.devrob.online /app/schema/catalogue.js
 
-  - name: Restart catalogue
+  - name: Restart catalogue service
     ansible.builtin.service:
       name: catalogue
       state: restarted
-    
