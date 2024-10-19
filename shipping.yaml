@@ -1,13 +1,10 @@
-- name: Install catalogue component
-  hosts: catalogue
+- name: Install Shipping component
+  hosts: shipping
   become: yes
   tasks:
-  - name: setup NPM source
-    ansible.builtin.shell: "curl -sL https://rpm.nodesource.com/setup_lts.x | bash"
-
-  - name: Install NodeJS
+  - name: Install Maven
     ansible.builtin.yum:
-      name: nodejs
+      name: maven
       state: installed
 
   - name: check roboshop user exist or not
@@ -36,50 +33,41 @@
       path: /app
       state: directory
 
-  - name: download catalogue artifact
-    ansible.builtin.get_url:
-      url: https://roboshop-builds.s3.amazonaws.com/catalogue.zip
-      dest: /tmp
-
-  - name: extract catalogue artifact
+  - name: Download shipping and extract
     ansible.builtin.unarchive:
-      src: /tmp/catalogue.zip
+      src: https://roboshop-builds.s3.amazonaws.com/shipping.zip
       dest: /app
       remote_src: yes
 
-  - name: install dependencies
-    ansible.builtin.command: npm install
+  - name: maven package
+    ansible.builtin.command: mvn clean package
     args:
       chdir: /app
 
-  - name: copy catalogue service
+  - name: rename jar file
+    ansible.builtin.command: mv target/shipping-1.0.jar shipping.jar
+    args:
+      chdir: /app
+
+  - name: copy shipping service
     ansible.builtin.copy:
-      src: catalogue.service
-      dest: /etc/systemd/system/catalogue.service
+      src: shipping.service
+      dest: /etc/systemd/system/shipping.service
 
   - name: deamon reload
     ansible.builtin.systemd:
       daemon_reload: true
 
-  - name: copy mongo repo to yum.repos.d
-    ansible.builtin.copy:
-      src: mongodb.repo
-      dest: /etc/yum.repos.d/mongo.repo
-
-  - name: Install MongoDB
+  - name: Install MySQL client
     ansible.builtin.yum:
-      name: mongodb-org-shell
+      name: mysql
       state: installed
 
-  - name: load catalogue data
-    ansible.builtin.command: mongo --host mongodb..online < /app/schema/catalogue.js
-
-  - name: restart catalogue
+  - name: load mysql schema
+    ansible.builtin.shell: mysql -h mysql.devrob.online -uroot -pRoboShop@1 < /app/schema/shipping.sql 
+  
+  - name: restart shipping
     ansible.builtin.service:
-      name: catalogue
+      name: shipping
       state: restarted
       enabled: true
-
-  
-
-  

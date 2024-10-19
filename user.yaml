@@ -1,0 +1,71 @@
+---
+- name: Adding user components
+  hosts: user
+  become: yes
+
+  tasks:
+  - name: setting-up node js repo
+    ansible.builtin.shell: curl -sL https://rpm.nodesource.com/setup_lts.x | bash
+
+  - name: installing nodes js
+    ansible.builtin.yum:
+      name: nodejs
+      state: installed
+
+  - name: check roboshop user exist or not
+    ansible.builtin.command: id roboshop
+    register: out
+    ignore_errors: true
+
+  - when: out.rc != 0
+    name: create user roboshop
+    become: yes
+    ansible.builtin.user:
+      name: roboshop
+
+  - name: check /app directory exists or not
+    ansible.builtin.stat:
+      path: /app
+    register: directory
+
+  - name: print directory stat
+    ansible.builtin.debug:
+      msg: "output: {{directory}}"
+    
+  - when: directory.stat.exists == False
+    name: create/app directory
+    ansible.builtin.file:
+      name: /app
+      state: directory
+
+  - name: downloading required user artifacts
+    ansible.builtin.get_url: 
+      url: https://roboshop-builds.s3.amazonaws.com/user.zip
+      dest: /tmp
+
+  - name: extracting user artifacts
+    ansible.builtin.unarchive:
+      src: /tmp/user.zip
+      dest: /app
+      remote_src: yes
+
+  - name: Installing node modules
+    ansible.builtin.command: npm install
+    args:
+      chdir: /app
+
+  - name: copy user services
+    ansible.builtin.copy:
+      src: user.service
+      dest: /etc/systemd/system/user.service
+
+  - name: daemon reload
+    ansible.builtin.systemd:
+    daemon_reload: true
+
+  - name: start user service
+    ansible.builtin.user:
+      name: user
+      state: started
+      enabled: true
+      

@@ -25,7 +25,7 @@
       url: https://roboshop-builds.s3.amazonaws.com/web.zip
       dest: /tmp
 
-  - name: extract catalogue artifact
+  - name: extract user artifact
     ansible.builtin.unarchive:
       src: /tmp/web.zip
       dest: /usr/share/nginx/html
@@ -40,3 +40,22 @@
     ansible.builtin.service:
       name: nginx
       state: restarted
+
+  - name: copy mongo repo to yum.repos.d
+    ansible.builtin.copy:
+      src: mongodb.repo
+      dest: /etc/yum.repos.d/mongo.repo
+
+  - name: Install MongoDB
+    ansible.builtin.yum:
+      name: mongodb-org-shell
+      state: installed
+
+  - name: load user data
+    ansible.builtin.command: mongo --host mongodb.devrob.online < /app/schema/user.js
+
+  - name: restart user
+    ansible.builtin.service:
+      name: user
+      state: restarted
+      enabled: true

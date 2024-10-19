@@ -6,3 +6,24 @@ catalogue.devrob.online
 
 [web]
 web.devrob.online
+
+[redis]
+redis.devrob.online
+
+[user]
+user.devrob.online
+
+[cart]
+cart.devrob.online
+
+[mysql]
+mysql.devrob.online
+
+[shipping]
+shipping.devrob.online
+
+[rabbitmq]
+rabbitmq.devrob.online
+
+[payment]
+payment.devrob.online
