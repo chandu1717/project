@@ -1,57 +1,50 @@
 - name: install web component
   hosts: web
   become: yes
-  vars:
-    nginx_html_path: /usr/share/nginx/html
-    web_zip_url: https://roboshop-builds.s3.amazonaws.com/web.zip
-    roboshop_conf_src: roboshop.conf
-    roboshop_conf_dest: /etc/nginx/default.d/roboshop.conf
-
   tasks:
   - name: install nginx
     ansible.builtin.yum:
       name: nginx
       state: installed
 
-  - name: ensure nginx is enabled
-    ansible.builtin.service:
-      name: nginx
-      enabled: yes
-
-  - name: start nginx
+  - name: start and enable nginx
     ansible.builtin.service:
       name: nginx
       state: started
+      enabled: yes
 
-  - name: remove existing html directory
+  - name: remove html directory
     ansible.builtin.file:
-      path: "{{ nginx_html_path }}"
+      path: /usr/share/nginx/html
       state: absent
-    ignore_errors: yes
 
-  - name: create new html directory
+  - name: create html directory
     ansible.builtin.file:
-      path: "{{ nginx_html_path }}"
+      path: /usr/share/nginx/html
       state: directory
 
   - name: download web artifact
     ansible.builtin.get_url:
-      url: "{{ web_zip_url }}"
+      url: https://roboshop-builds.s3.amazonaws.com/web.zip
       dest: /tmp/web.zip
-      mode: '0644'
+
+  - name: check if web.zip exists
+    ansible.builtin.stat:
+      path: /tmp/web.zip
+    register: web_zip_stat
 
   - name: extract catalogue artifact
     ansible.builtin.unarchive:
       src: /tmp/web.zip
-      dest: "{{ nginx_html_path }}"
+      dest: /usr/share/nginx/html
       remote_src: yes
-    when: not ansible.builtin.stat(path="/tmp/web.zip").stat.exists
+    when: web_zip_stat.stat.exists
 
   - name: copy roboshop.conf
     ansible.builtin.copy:
-      src: "{{ roboshop_conf_src }}"
-      dest: "{{ roboshop_conf_dest }}"
-
+      src: roboshop.conf
+      dest: /etc/nginx/default.d/roboshop.conf
+    
   - name: restart nginx
     ansible.builtin.service:
       name: nginx
