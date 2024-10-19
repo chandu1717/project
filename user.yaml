@@ -64,8 +64,7 @@
       daemon_reload: true
 
   - name: start user service
-    ansible.builtin.user:
-      name: user
+    ansible.builtin.systemd:
+      name: user.service
       state: started
       enabled: true
-      
